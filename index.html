@@ -7528,7 +7528,15 @@ const Escape = (() => {
       });
       el.addEventListener('pointerup', () => {
         drag = false;
-        if (!moved) { st.sheet = id; render(); }
+        if (moved) return;
+        const act = node.actions.find(x => x.id === id);
+        if (act && !st.done.has(id) && needMet(act)) {
+          const keep = st.node;
+          apply(act);
+          if (st.node === keep) { st.sheet = id; render(); }
+        } else {
+          st.sheet = id; render();
+        }
       });
       el.ondragover = e => { e.preventDefault(); el.classList.add('over'); };
       el.ondragleave = () => el.classList.remove('over');
