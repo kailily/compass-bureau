@@ -7473,7 +7473,7 @@ const Escape = (() => {
     }).join('') || `<span class="inv-empty">（空）</span>`;
 
     const log = st.log.map(l => `<div class="esc-log-line">${esc(l)}</div>`).join('');
-    const places = Object.keys(E.nodes).filter(k => st.visited.has(k) && !E.nodes[k].win);
+    const places = Object.keys(E.nodes).filter(k => !E.nodes[k].win);
 
     $('#view').innerHTML = `
       <div class="page-head">
@@ -7501,7 +7501,7 @@ const Escape = (() => {
           <h4 style="margin-top:0">道具袋</h4>
           <div class="inv-list">${inv}</div>
           <p class="inv-tip">把道具拖到方块上用；点方块看细节。</p>
-          ${places.length > 1 ? `<div class="esc-places">${places.map(k => `<button class="pl ${k === st.node ? 'on' : ''}" data-go="${k}">${esc(label(E.nodes[k]))}</button>`).join('')}</div>` : ''}
+          ${places.length ? `<h4 style="margin:18px 0 8px">地图</h4><div class="esc-places">${places.map(k => `<button class="pl ${k === st.node ? 'on' : (st.visited.has(k) ? '' : 'locked')}" ${st.visited.has(k) ? `data-go="${k}"` : 'disabled'}>${esc(label(E.nodes[k]))}</button>`).join('')}</div>` : ''}
         </aside>
       </div>`;
 
@@ -7545,6 +7545,14 @@ const Escape = (() => {
         st.drag = b.dataset.i;
         try { e.dataTransfer.setData('text/plain', b.dataset.i); e.dataTransfer.effectAllowed = 'move'; } catch (_) {}
       };
+      b.ondragover = e => { e.preventDefault(); b.classList.add('sel'); };
+      b.ondragleave = () => b.classList.remove('sel');
+      b.ondrop = e => {
+        e.preventDefault(); b.classList.remove('sel');
+        let src = st.drag;
+        try { src = e.dataTransfer.getData('text/plain') || src; } catch (_) {}
+        if (src && src !== b.dataset.i) combine(src, b.dataset.i);
+      };
       b.onclick = () => {
         st.sel = st.sel === b.dataset.i ? null : b.dataset.i;
         const it = E.items[b.dataset.i];
@@ -7561,6 +7569,16 @@ const Escape = (() => {
     };
   }
 
+
+  function combine(a, b) {
+    const rs = st.esc.recipes || [];
+    const r = rs.find(x => (x.a === a && x.b === b) || (x.a === b && x.b === a));
+    if (!r) return toast('这两样凑不到一起', 'red');
+    st.inv.delete(a); st.inv.delete(b); st.inv.add(r.out);
+    st.log.push(r.say || '两样东西拼在了一起。');
+    toast(r.say || '拼好了', 'green');
+    Sfx.good(); render();
+  }
 
   /* 把道具用到某件东西上；没带道具就是直接动手 */
   function useOn(id, item) {
