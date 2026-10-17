@@ -7430,8 +7430,7 @@ const Escape = (() => {
 
     st.pos = st.pos || {};
     const all = node.actions;
-    const hiddenN = all.filter(a => !st.seen.has(a.id)).length;
-    const acts = all.filter(a => st.seen.has(a.id) && !st.done.has(a.id));
+    const acts = all.filter(a => !st.done.has(a.id));
     const center = { x: 50, y: 44 };
     acts.forEach((a, i) => {
       if (!st.pos[a.id]) {
@@ -7452,13 +7451,20 @@ const Escape = (() => {
     }).join('');
 
     const a0 = st.sheet ? node.actions.find(x => x.id === st.sheet) : null;
+    const miss = a0 && a0.need && a0.need.items ? a0.need.items.filter(i => !st.inv.has(i)) : [];
+    const hint = miss.length
+      ? (miss.includes('flashlight') ? '太黑了，伸手不见五指——得先弄到一点光。'
+        : miss.includes('key') ? '锁着。得先找到能开它的钥匙。'
+        : miss.includes('poker') || miss.includes('knife') ? '卡得很死，空手弄不开——得有件趁手的家伙。'
+        : '还少一样东西，四下再找找。')
+      : '';
     const sheet = st.sheet ? `
       <div class="gsheet">
         <button class="gsheet-tab" id="sheetClose">收起</button>
         <div class="gsheet-head"><b>${esc(a0 ? objName(a0.label) : label(node))}</b>
-          <span>${a0 && st.done.has(a0.id) ? '已经做过' : (a0 && !needMet(a0) ? '还差点东西' : '')}</span></div>
-        <p>${esc(a0 ? (a0.say || '再仔细看看。') : node.text)}</p>
-        ${a0 && !st.done.has(a0.id) ? `<div class="row"><button class="btn primary" id="sheetDo" data-do="${a0.id}">动手试试</button>
+          <span>${a0 && st.done.has(a0.id) ? '已经做过' : (hint ? '暂时动不了' : '')}</span></div>
+        <p>${esc(a0 ? (hint || a0.say || '再仔细看看。') : node.text)}</p>
+        ${a0 && !st.done.has(a0.id) && !hint ? `<div class="row"><button class="btn primary" id="sheetDo" data-do="${a0.id}">动手试试</button>
           <span class="inv-tip" style="margin:0">也可以把道具拖到这个方块上</span></div>` : ''}
       </div>` : '';
 
@@ -7487,7 +7493,6 @@ const Escape = (() => {
           <div class="esc-graph" id="graph">
             <svg class="glines" viewBox="0 0 100 100" preserveAspectRatio="none">${lines}</svg>
             <div class="gnode here" id="look" style="left:${center.x}%;top:${center.y}%">${esc(label(node))}</div>
-            ${hiddenN ? `<div class="esc-hint">点中间的房间环顾四周 · 还有 ${hiddenN} 处没留意</div>` : ''}
             ${nodesHtml}
           </div>
           ${sheet}
@@ -7553,9 +7558,7 @@ const Escape = (() => {
     $$('.pl[data-go]').forEach(b => { b.onclick = () => { st.node = b.dataset.go; st.sheet = null; render(); }; });
     const look = $('#look');
     if (look) look.onclick = () => {
-      const nxt = all.find(a => !st.seen.has(a.id));
-      if (nxt) { st.seen.add(nxt.id); toast('你注意到：' + nxt.label, ''); render(); }
-      else { st.sheet = '__room'; render(); }
+      st.sheet = '__room'; render();
     };
   }
 
