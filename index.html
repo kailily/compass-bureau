@@ -4972,8 +4972,6 @@ const App = (() => {
 
   function unlockState() {
     const p = progress();
-    const allTotal = 38;
-    const doneTotal = Object.values(P).reduce((a, b) => a + b, 0);
     const open = {};
     if (!Store.available) { BOARD_ORDER.forEach(b => { open[b] = true; }); return open; }
     open.science = true;                       // 科普不用解锁
