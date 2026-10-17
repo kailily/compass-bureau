@@ -1803,6 +1803,14 @@ input,textarea,select{cursor:text}
 
 .pl.locked{opacity:.34;cursor:default}
 
+/* 窄屏：导航换行显示，别被顶栏挡住 */
+@media(max-width:1180px){
+  .topbar{flex-wrap:wrap;row-gap:8px}
+  .nav{order:3;width:100%;margin-left:0;overflow:visible;flex-wrap:wrap;gap:2px 4px}
+  .nav a{padding:6px 11px;font-size:13px}
+  .topbar-right{margin-left:auto}
+}
+
 </style>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0b07'/%3E%3Ccircle cx='16' cy='16' r='11.5' fill='none' stroke='%23d8a94b' stroke-width='1.6'/%3E%3Cpath d='M16 5.5 18.4 14.6 16 16 13.6 14.6Z' fill='%23c4564a'/%3E%3Cpath d='M16 26.5 18.4 17.4 16 16 13.6 17.4Z' fill='%23d8a94b' opacity='.55'/%3E%3Cpath d='M5.5 16 14.6 13.6 16 16 14.6 18.4Z' fill='%23d8a94b' opacity='.85'/%3E%3Cpath d='M26.5 16 17.4 13.6 16 16 17.4 18.4Z' fill='%23d8a94b' opacity='.85'/%3E%3Ccircle cx='16' cy='16' r='1.5' fill='%23f0cd82'/%3E%3C/svg%3E">
 </head>
@@ -7240,6 +7248,8 @@ const Logic = (() => {
   function showResult() {
     const { pz, cfg } = st;
     st.done = true;
+    const idx = LOGIC.levels.findIndex(l => l.id === cfg.id);
+    const nextCfg = idx >= 0 ? LOGIC.levels[idx + 1] : null;
     const secs = Math.floor((Date.now() - st.t0) / 1000);
     const score = Math.max(20, 100 - st.hints * 10 - Math.max(0, Math.floor((secs - 60) / 12)));
     const room = victimRoomName();
@@ -7275,7 +7285,10 @@ const Logic = (() => {
         </div>
         <div class="spread" style="margin-top:18px">
           <button class="btn ghost" onclick="App.nav('logic',true)">选关</button>
-          <button class="btn primary" onclick="App.nav('logic/${cfg.id}',true)">换一局</button>
+          <div class="row">
+            <button class="btn ghost" onclick="App.nav('logic/${cfg.id}',true)">换一局</button>
+            ${nextCfg ? `<button class="btn primary" onclick="App.nav('logic/${nextCfg.id}',true)">下一关 · ${esc(nextCfg.title)}</button>` : `<button class="btn primary" onclick="App.nav('logic',true)">回到选关</button>`}
+          </div>
         </div>
       </div>`;
   }
