@@ -1826,6 +1826,33 @@ input,textarea,select{cursor:text}
 .pov-alibi{margin:10px 0 0;font-size:12.5px;color:#a89a83;border-left:2px solid rgba(216,169,75,.35);padding-left:10px;line-height:1.8}
 .pov-sub{display:none}
 
+/* 密室：节点图（参考文字密室的连线布局） */
+.esc-graph{
+  position:relative;height:430px;margin:6px 0 14px;border:1px solid rgba(216,169,75,.16);border-radius:2px;
+  background:
+    linear-gradient(rgba(216,169,75,.055) 1px,transparent 1px) 0 0/100% 36px,
+    linear-gradient(90deg,rgba(216,169,75,.055) 1px,transparent 1px) 0 0/36px 100%,
+    #0a0805;
+  overflow:hidden;
+}
+.glines{position:absolute;inset:0;width:100%;height:100%;stroke:rgba(216,169,75,.32);stroke-width:.35}
+.gnode{
+  position:absolute;transform:translate(-50%,-50%);padding:10px 15px;border-radius:3px;
+  background:linear-gradient(180deg,#1b1510,#12100c);border:1px solid rgba(216,169,75,.26);
+  color:#d9cdb6;font-size:13px;white-space:nowrap;cursor:grab;user-select:none;transition:border-color .15s,color .15s;
+}
+.gnode:hover{border-color:var(--brass-2);color:#f0e6d2}
+.gnode.here{background:linear-gradient(180deg,#efe5cf,#e2d5b8);color:#2a1c06;border-color:#c9a35a;
+  font-family:var(--serif);font-size:15px;letter-spacing:.1em;cursor:default}
+.gnode.over{border-color:var(--brass-2);box-shadow:0 0 0 3px rgba(216,169,75,.16)}
+.gnode.need{color:#8b7f6c}
+.gsheet{border:1px solid rgba(216,169,75,.26);border-top:none;background:linear-gradient(180deg,#12100c,#0b0906);padding:18px 20px;margin-bottom:12px}
+.gsheet-tab{display:block;margin:-30px auto 12px;background:#15110c;border:1px solid rgba(216,169,75,.3);color:var(--gold-dim);font-size:11px;letter-spacing:.22em;padding:3px 18px;border-radius:0 0 3px 3px;cursor:pointer}
+.gsheet-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px dashed rgba(216,169,75,.18);padding-bottom:8px;margin-bottom:10px}
+.gsheet-head b{font-family:var(--serif);font-size:18px;color:#efe5d3}
+.gsheet-head span{font-family:var(--mono);font-size:11px;color:var(--gold-dim)}
+.gsheet p{font-family:var(--serif);font-size:14px;line-height:1.95;color:#d8ccb5;margin:0 0 10px}
+
 </style>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0b07'/%3E%3Ccircle cx='16' cy='16' r='11.5' fill='none' stroke='%23d8a94b' stroke-width='1.6'/%3E%3Cpath d='M16 5.5 18.4 14.6 16 16 13.6 14.6Z' fill='%23c4564a'/%3E%3Cpath d='M16 26.5 18.4 17.4 16 16 13.6 17.4Z' fill='%23d8a94b' opacity='.55'/%3E%3Cpath d='M5.5 16 14.6 13.6 16 16 14.6 18.4Z' fill='%23d8a94b' opacity='.85'/%3E%3Cpath d='M26.5 16 17.4 13.6 16 16 17.4 18.4Z' fill='%23d8a94b' opacity='.85'/%3E%3Ccircle cx='16' cy='16' r='1.5' fill='%23f0cd82'/%3E%3C/svg%3E">
 </head>
@@ -7372,19 +7399,41 @@ const Escape = (() => {
   const label = n => n.name || (n.text ? n.text.split('。')[0].slice(0, 10) : '这一间');
 
   function render() {
-    const E = st.esc, node = E.nodes[st.node];   // E = 游戏剧本对象；esc() = 全局 HTML 转义函数
-
+    const E = st.esc, node = E.nodes[st.node];
     if (st.code) return renderCode();
     if (node.win) return win();
 
-    const objs = node.actions.map(a => {
-      const done = st.done.has(a.id);
-      const ok = needMet(a);
-      return `<div class="esc-obj ${done ? 'done' : ''} ${ok ? '' : 'need'}" data-id="${a.id}">
-        <span class="obj-mark">${done ? '✓' : '◇'}</span>
-        <span class="obj-name">${esc(a.label)}</span>
-      </div>`;
+    st.pos = st.pos || {};
+    const acts = node.actions.filter(a => !st.done.has(a.id));
+    const center = { x: 50, y: 44 };
+    acts.forEach((a, i) => {
+      if (!st.pos[a.id]) {
+        const ang = (Math.PI * 2 * i) / Math.max(1, acts.length) - Math.PI / 2;
+        st.pos[a.id] = { x: 50 + Math.cos(ang) * 31, y: 44 + Math.sin(ang) * 27 };
+      }
+    });
+    const P = id => st.pos[id] || center;
+
+    const lines = acts.map(a => {
+      const p = P(a.id);
+      return `<line data-l="${a.id}" x1="${center.x}" y1="${center.y}" x2="${p.x}" y2="${p.y}" />`;
     }).join('');
+
+    const nodesHtml = acts.map(a => {
+      const p = P(a.id), ok = needMet(a);
+      return `<div class="gnode ${ok ? '' : 'need'}" data-id="${a.id}" style="left:${p.x}%;top:${p.y}%">${esc(a.label)}</div>`;
+    }).join('');
+
+    const a0 = st.sheet ? node.actions.find(x => x.id === st.sheet) : null;
+    const sheet = st.sheet ? `
+      <div class="gsheet">
+        <button class="gsheet-tab" id="sheetClose">收起</button>
+        <div class="gsheet-head"><b>${esc(a0 ? a0.label : label(node))}</b>
+          <span>${a0 && st.done.has(a0.id) ? '已经做过' : (a0 && !needMet(a0) ? '还差点东西' : '')}</span></div>
+        <p>${esc(a0 ? (a0.say || '再仔细看看。') : node.text)}</p>
+        ${a0 && !st.done.has(a0.id) ? `<div class="row"><button class="btn primary" id="sheetDo" data-do="${a0.id}">动手试试</button>
+          <span class="inv-tip" style="margin:0">也可以把道具拖到这个方块上</span></div>` : ''}
+      </div>` : '';
 
     const inv = [...st.inv].map(i => {
       const it = E.items[i];
@@ -7392,6 +7441,7 @@ const Escape = (() => {
     }).join('') || `<span class="inv-empty">（空）</span>`;
 
     const log = st.log.map(l => `<div class="esc-log-line">${esc(l)}</div>`).join('');
+    const places = Object.keys(E.nodes).filter(k => st.visited.has(k) && !E.nodes[k].win);
 
     $('#view').innerHTML = `
       <div class="page-head">
@@ -7407,24 +7457,56 @@ const Escape = (() => {
 
       <div class="escape-wrap">
         <section class="card escape-room">
-          <h4 style="margin-top:0">现场</h4>
-          <div class="esc-places">
-            ${Object.keys(E.nodes).filter(k => E.nodes[k] && !E.nodes[k].win)
-              .map(k => {
-                const here = k === st.node, known = st.visited.has(k);
-                return `<button class="pl ${here ? 'on' : (known ? '' : 'locked')}" ${known ? `data-go="${k}"` : 'disabled'}>${here ? '◎ ' : ''}${esc(label(E.nodes[k]))}</button>`;
-              }).join('')}
+          <div class="esc-graph" id="graph">
+            <svg class="glines" viewBox="0 0 100 100" preserveAspectRatio="none">${lines}</svg>
+            <div class="gnode here" style="left:${center.x}%;top:${center.y}%">${esc(label(node))}</div>
+            ${nodesHtml}
           </div>
-          <p class="esc-text">${esc(node.text)}</p>
-          <div class="esc-scene">${objs || '<div class="esc-obj need">这里已经没什么可动的了。</div>'}</div>
+          ${sheet}
           <div class="esc-log">${log || '<div class="esc-log-line dim">— 记录会写在这里 —</div>'}</div>
         </section>
         <aside class="card escape-inv">
           <h4 style="margin-top:0">道具袋</h4>
           <div class="inv-list">${inv}</div>
-          <p class="inv-tip">把道具拖到物件上用；点一下道具、再点物件也行。</p>
+          <p class="inv-tip">把道具拖到方块上用；点方块看细节。</p>
+          ${places.length > 1 ? `<div class="esc-places">${places.map(k => `<button class="pl ${k === st.node ? 'on' : ''}" data-go="${k}">${esc(label(E.nodes[k]))}</button>`).join('')}</div>` : ''}
         </aside>
       </div>`;
+
+    // 节点：可拖动，拖动后连线跟着走；点一下弹说明
+    $$('.gnode[data-id]').forEach(el => {
+      const id = el.dataset.id;
+      let sx = 0, sy = 0, ox = 0, oy = 0, moved = false, drag = false;
+      el.addEventListener('pointerdown', e => {
+        drag = true; moved = false; sx = e.clientX; sy = e.clientY;
+        const p = st.pos[id]; ox = p.x; oy = p.y;
+        el.setPointerCapture(e.pointerId);
+      });
+      el.addEventListener('pointermove', e => {
+        if (!drag) return;
+        if (Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) > 4) moved = true;
+        if (!moved) return;
+        const r = $('#graph').getBoundingClientRect();
+        const nx = Math.max(8, Math.min(92, ox + (e.clientX - sx) / r.width * 100));
+        const ny = Math.max(10, Math.min(88, oy + (e.clientY - sy) / r.height * 100));
+        st.pos[id] = { x: nx, y: ny };
+        el.style.left = nx + '%'; el.style.top = ny + '%';
+        const ln = document.querySelector('.glines line[data-l="' + id + '"]');
+        if (ln) { ln.setAttribute('x2', nx); ln.setAttribute('y2', ny); }
+      });
+      el.addEventListener('pointerup', () => {
+        drag = false;
+        if (!moved) { st.sheet = id; render(); }
+      });
+      el.ondragover = e => { e.preventDefault(); el.classList.add('over'); };
+      el.ondragleave = () => el.classList.remove('over');
+      el.ondrop = e => {
+        e.preventDefault(); el.classList.remove('over');
+        let item = st.drag;
+        try { item = e.dataTransfer.getData('text/plain') || item; } catch (_) {}
+        useOn(id, item);
+      };
+    });
 
     $$('.inv-chip').forEach(b => {
       b.ondragstart = e => {
@@ -7438,21 +7520,11 @@ const Escape = (() => {
         render();
       };
     });
-    $$('.esc-obj[data-id]').forEach(t => {
-      t.ondragover = e => { e.preventDefault(); t.classList.add('over'); };
-      t.ondragleave = () => t.classList.remove('over');
-      t.ondrop = e => {
-        e.preventDefault(); t.classList.remove('over');
-        let item = st.drag;
-        try { item = e.dataTransfer.getData('text/plain') || item; } catch (_) {}
-        useOn(t.dataset.id, item);
-      };
-      t.onclick = () => useOn(t.dataset.id, st.sel);
-    });
-    $$('.pl[data-go]').forEach(b => {
-      b.onclick = () => { st.node = b.dataset.go; render(); };
-    });
+    const sc = $('#sheetClose'); if (sc) sc.onclick = () => { st.sheet = null; render(); };
+    const sd = $('#sheetDo'); if (sd) sd.onclick = () => useOn(sd.dataset.do, st.sel);
+    $$('.pl[data-go]').forEach(b => { b.onclick = () => { st.node = b.dataset.go; st.sheet = null; render(); }; });
   }
+
 
   /* 把道具用到某件东西上；没带道具就是直接动手 */
   function useOn(id, item) {
