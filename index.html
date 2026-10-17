@@ -4243,6 +4243,7 @@ const ESCAPES = [
       memo:  { name: '便签', desc: '柜员潦草的字：「密码是 π 前六位。」' },
       glove: { name: '橡胶手套', desc: '套在手指上，或许能骗过指纹锁。' },
       axe:   { name: '消防斧', desc: '前厅消防箱里的，沉得压手。' },
+      card:  { name: '门禁卡', desc: '保险柜里取出的备用门禁卡。' },
     },
     nodes: {
       vault: {
@@ -4255,7 +4256,8 @@ const ESCAPES = [
           { id: 'roster', label: '看墙上的排班表', say: '这个月的夜班表，两个人的名字被划掉了，剩下一个空位没人填。' },
           { id: 'cup',    label: '看那只空咖啡杯', say: '杯底一圈干掉的咖啡渍，杯壁还留着口红印——不像是夜班的人喝的。' },
           { id: 'docket', label: '翻押运记录', say: '押运记录最后一页写着「728」，笔迹很急。可这一页和今天的日期对不上。' },
-          { id: 'door',   label: '输入密码开门', need: { items: ['memo'], flags: ['fpOK'] }, code: { answer: '314159', to: 'anteroom', say: '输入 314159，双锁齐开，门向外弹开。' } },
+          { id: 'safe2',  label: '打开小保险柜', need: { flags: ['fpOK'] }, code: { answer: '0728', give: ['card'], say: '押运记录上的 728，前面补个 0——柜门弹开，里面是一张备用门禁卡。' } },
+          { id: 'door',   label: '输入密码开门', need: { items: ['memo', 'card'], flags: ['fpOK'] }, code: { answer: '314159', to: 'anteroom', say: '输入 314159，双锁齐开，门向外弹开。' } },
         ],
       },
       anteroom: {
@@ -4304,7 +4306,8 @@ const ESCAPES = [
         actions: [
           { id: 'panel', label: '打开配电箱', need: { items: ['fuse'] }, set: ['power'], say: '你把保险丝换上，合闸——备用灯一盏盏亮起来。' },
           { id: 'shelf2',label: '查书库的排架号', say: '排架号从 A 到 Z，唯独缺了「N」这一排，像是被人搬空过。' },
-          { id: 'exit',  label: '推消防通道门', need: { flags: ['power'] }, to: 'out5', say: '应急灯亮着，通道门一推就开。你顺着楼梯走到了街上。' },
+          { id: 'shelf3',label: '找到缺号的 N 排', need: { items: ['lamp'] }, set: ['sawN'], say: '灯照到最里侧——N 排被人挪到了墙后，空隙里嵌着一枚铜牌。' },
+          { id: 'exit',  label: '推消防通道门', need: { flags: ['power', 'sawN'] }, to: 'out5', say: '应急灯亮着，通道门一推就开。你顺着楼梯走到了街上。' },
         ],
       },
       out5: { win: true, text: '你走出图书馆。闭馆铃早已停了，整条街静得像没人来过。' },
