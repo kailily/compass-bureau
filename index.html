@@ -4959,6 +4959,8 @@ const App = (() => {
 
   function unlockState() {
     const p = progress();
+    const allTotal = 38;
+    const doneTotal = Object.values(P).reduce((a, b) => a + b, 0);
     const open = {};
     if (!Store.available) { BOARD_ORDER.forEach(b => { open[b] = true; }); return open; }
     open.science = true;                       // 科普不用解锁
@@ -5028,6 +5030,8 @@ const App = (() => {
   function renderHome() {
     const d = Store.d;
     const P = progress();
+    const allTotal = 38;
+    const doneTotal = Object.values(P).reduce((a, b) => a + b, 0);
     const smDone = (d.sm && d.sm.wins) || 0;
     const pct = (a, b) => Math.min(100, Math.round((a / b) * 100));
 
@@ -5058,10 +5062,10 @@ const App = (() => {
           <p>你离开有一阵子了，手生是正常的。架上的卷宗按难易排着，最前面两卷就摆在桌角；从那两卷起手，其余的自会依次打开。不必一上来就目光如炬：好侦探不是一眼看出答案的人，而是肯多问一句「为什么」的人。卷宗在这儿，什么时候翻开，你说了算。</p>
           <div class="hero-stats">
             <div class="hero-stat"><b>${d.pts}</b><span>累计酬金</span></div>
-            <div class="hero-stat"><b>${P.soup}/${SOUPS.length}</b><span>已揭汤底</span></div>
-            <div class="hero-stat"><b>${P.spot}/${SPOTS.length}</b><span>已勘现场</span></div>
-            <div class="hero-stat"><b>${P.case + P.detect}/${CASES.length + DETECT.length}</b><span>已结案件</span></div>
-            <div class="hero-stat"><b>${P.logic + P.escape + P.crypto + smDone + P['clue-chain'] + P.script}</b><span>已破谜题</span></div>
+            <div class="hero-stat"><b>${doneTotal}/${allTotal}</b><span>关卡进度</span></div>
+            <div class="hero-stat"><b>${P.soup + P.spot}</b><span>已破小案</span></div>
+            <div class="hero-stat"><b>${P.case + P.detect}</b><span>已结案件</span></div>
+            <div class="hero-stat"><b>${P.logic + P.escape + P['clue-chain'] + P.script + P.crypto}</b><span>已破谜题</span></div>
           </div>
         </div>
         <div class="hero-mark" aria-hidden="true">
@@ -7360,8 +7364,11 @@ const Logic = (() => {
   }
   function hint() {
     if (st.done) return;
+    const COST = 10;
+    if ((Store.d.pts || 0) < COST) return toast('酬金不够，先结两案再来换提示', 'red');
     const r = st.place.findIndex((v, i) => v !== st.pz.sol[i]);
     if (r < 0) return;
+    Store.d.pts = Math.max(0, (Store.d.pts || 0) - COST); Store.save();
     st.undo.push({ kind: 'place', r, prev: st.place[r] });
     st.place[r] = st.pz.sol[r]; st.hints++; Sfx.good(); render(); check();
   }
