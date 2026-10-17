@@ -1853,6 +1853,8 @@ input,textarea,select{cursor:text}
 .gsheet-head span{font-family:var(--mono);font-size:11px;color:var(--gold-dim)}
 .gsheet p{font-family:var(--serif);font-size:14px;line-height:1.95;color:#d8ccb5;margin:0 0 10px}
 
+.esc-hint{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--gold-dim);white-space:nowrap}
+
 </style>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0b07'/%3E%3Ccircle cx='16' cy='16' r='11.5' fill='none' stroke='%23d8a94b' stroke-width='1.6'/%3E%3Cpath d='M16 5.5 18.4 14.6 16 16 13.6 14.6Z' fill='%23c4564a'/%3E%3Cpath d='M16 26.5 18.4 17.4 16 16 13.6 17.4Z' fill='%23d8a94b' opacity='.55'/%3E%3Cpath d='M5.5 16 14.6 13.6 16 16 14.6 18.4Z' fill='%23d8a94b' opacity='.85'/%3E%3Cpath d='M26.5 16 17.4 13.6 16 16 17.4 18.4Z' fill='%23d8a94b' opacity='.85'/%3E%3Ccircle cx='16' cy='16' r='1.5' fill='%23f0cd82'/%3E%3C/svg%3E">
 </head>
@@ -7383,7 +7385,7 @@ const Escape = (() => {
   function start(esc) {
     st = {
       esc, node: esc.start,
-      inv: new Set(), flags: new Set(), done: new Set(), log: [], steps: 0, sel: null, drag: null, visited: new Set([esc.start]),
+      inv: new Set(), flags: new Set(), done: new Set(), log: [], steps: 0, sel: null, drag: null, seen: new Set(), visited: new Set([esc.start]),
       firstWin: !!(Store.d.escape && Store.d.escape.solved),
     };
     render();
@@ -7404,7 +7406,9 @@ const Escape = (() => {
     if (node.win) return win();
 
     st.pos = st.pos || {};
-    const acts = node.actions.filter(a => !st.done.has(a.id));
+    const all = node.actions;
+    const hiddenN = all.filter(a => !st.seen.has(a.id)).length;
+    const acts = all.filter(a => st.seen.has(a.id) && !st.done.has(a.id));
     const center = { x: 50, y: 44 };
     acts.forEach((a, i) => {
       if (!st.pos[a.id]) {
@@ -7459,7 +7463,8 @@ const Escape = (() => {
         <section class="card escape-room">
           <div class="esc-graph" id="graph">
             <svg class="glines" viewBox="0 0 100 100" preserveAspectRatio="none">${lines}</svg>
-            <div class="gnode here" style="left:${center.x}%;top:${center.y}%">${esc(label(node))}</div>
+            <div class="gnode here" id="look" style="left:${center.x}%;top:${center.y}%">${esc(label(node))}</div>
+            ${hiddenN ? `<div class="esc-hint">点中间的房间环顾四周 · 还有 ${hiddenN} 处没留意</div>` : ''}
             ${nodesHtml}
           </div>
           ${sheet}
@@ -7523,6 +7528,12 @@ const Escape = (() => {
     const sc = $('#sheetClose'); if (sc) sc.onclick = () => { st.sheet = null; render(); };
     const sd = $('#sheetDo'); if (sd) sd.onclick = () => useOn(sd.dataset.do, st.sel);
     $$('.pl[data-go]').forEach(b => { b.onclick = () => { st.node = b.dataset.go; st.sheet = null; render(); }; });
+    const look = $('#look');
+    if (look) look.onclick = () => {
+      const nxt = all.find(a => !st.seen.has(a.id));
+      if (nxt) { st.seen.add(nxt.id); toast('你注意到：' + nxt.label, ''); render(); }
+      else { st.sheet = '__room'; render(); }
+    };
   }
 
 
