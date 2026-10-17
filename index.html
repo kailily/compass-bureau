@@ -4848,6 +4848,19 @@ const ICON = {
 };
 
 const App = (() => {
+  /* 各板块一律由易到难：轻松/入门 → 进阶 → 硬核 → 大师 */
+  const LV_RANK = { '轻松': 1, '入门': 1, '进阶': 2, '硬核': 3, '大师': 4 };
+  const byLv = (a, b) => (LV_RANK[a.lv] || 9) - (LV_RANK[b.lv] || 9);
+  try {
+    if (typeof SOUPS !== 'undefined') SOUPS.sort(byLv);
+    if (typeof SPOTS !== 'undefined') SPOTS.sort(byLv);
+    if (typeof CLUE_CHAIN !== 'undefined') CLUE_CHAIN.sort(byLv);
+    if (typeof CASES !== 'undefined') CASES.sort(byLv);
+    if (typeof DETECT !== 'undefined') DETECT.sort(byLv);
+    if (typeof SCRIPTS !== 'undefined') SCRIPTS.sort(byLv);
+    if (typeof ESCAPES !== 'undefined') ESCAPES.sort(byLv);
+  } catch (_) {}
+
 
   const routes = {
     home: () => renderHome(),
