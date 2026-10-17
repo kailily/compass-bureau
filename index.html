@@ -7464,8 +7464,7 @@ const Escape = (() => {
         <div class="gsheet-head"><b>${esc(a0 ? objName(a0.label) : label(node))}</b>
           <span>${a0 && st.done.has(a0.id) ? '已经做过' : (hint ? '暂时动不了' : '')}</span></div>
         <p>${esc(a0 ? (hint || a0.say || '再仔细看看。') : node.text)}</p>
-        ${a0 && !st.done.has(a0.id) && !hint ? `<div class="row"><button class="btn primary" id="sheetDo" data-do="${a0.id}">动手试试</button>
-          <span class="inv-tip" style="margin:0">也可以把道具拖到这个方块上</span></div>` : ''}
+        ${a0 && !st.done.has(a0.id) && !hint ? `<p class="inv-tip" style="margin:0">把对的东西拖到这个方块上。</p>` : ''}
       </div>` : '';
 
     const inv = [...st.inv].map(i => {
