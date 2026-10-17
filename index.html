@@ -9057,6 +9057,7 @@ const Rank = (() => {
   }
 
   async function page() {
+    const nick = (() => { try { return localStorage.getItem('compass.nick') || ''; } catch (_) { return ''; } })();
     const { list, online } = await pull();
     const me = Store.d.pts || 0;
     $('#view').innerHTML = `
@@ -9070,7 +9071,7 @@ const Rank = (() => {
         <div class="card">
           <div class="spread" style="margin-bottom:10px">
             <b style="font-family:var(--serif);letter-spacing:.06em">名次</b>
-            <span class="tag ${online ? 'green' : 'gold'}">${online ? '在线榜' : '本地榜 · 未接后端'}</span>
+            <span class="tag gold">按酬金排名</span>
           </div>
           <div class="rank-list">${rows(list)}</div>
         </div>
@@ -9078,7 +9079,7 @@ const Rank = (() => {
           <h4 style="margin-top:0">我的酬金</h4>
           <div class="big">${me}</div>
           <p class="inv-tip">签个名字，把当前酬金记到榜上。</p>
-          <input id="rankName" maxlength="12" placeholder="你的名字" class="rank-input">
+          <input id="rankName" maxlength="12" placeholder="你的昵称" class="rank-input" value="${esc(nick)}">
           <button class="btn primary" id="rankSubmit" style="width:100%;margin-top:8px">记上这一笔</button>
           <p class="inv-tip" id="rankMsg" style="margin-top:10px"></p>
         </aside>
