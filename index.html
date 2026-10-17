@@ -9062,7 +9062,10 @@ const Rank = (() => {
     const me = Store.d.pts || 0;
     $('#view').innerHTML = `
       <div class="page-head">
-        <div class="kicker">HONOR ROLL · 酬金榜</div>
+        <div class="spread">
+          <div class="kicker">HONOR ROLL · 酬金榜</div>
+          <button class="btn ghost sm" onclick="App.nav('home',true)">← 大厅</button>
+        </div>
         <h1>酬金榜</h1>
         <p>按累计酬金排。结案、破题都会记一笔，用时越短、提示越少，进账越多。</p>
         <div class="howto"><b>怎么上榜</b>：每次结算自动累计；在这里留下名字，别人打开同一份档案就能看见。</div>
