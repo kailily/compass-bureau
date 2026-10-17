@@ -4812,7 +4812,7 @@ const App = (() => {
     return {
       soup:   cnt(d.soup, x => x && x.solved),
       spot:   cnt(d.spot, x => x && x.clears > 0),
-      logic:  (d.deduction && d.deduction.solved) || 0,
+      logic:  cnt(d.logic, x => x && x.solved) || (d.deduction && d.deduction.solved) || 0,
       'clue-chain': cnt(d.chain, x => x && x.solved),
       case:   cnt(d.cases, x => x && x.solved),
       detect: cnt(d.detect, x => x && x.solved),
@@ -7258,7 +7258,8 @@ const Logic = (() => {
     const rec = (Store.d.logic || {})[cfg.id] || {};
     Store.d.logic = Store.d.logic || {};
     Store.d.logic[cfg.id] = { solved: true, score: Math.max(score, rec.score || 0) };
-    if (!Store.d.deduction) Store.d.deduction = { solved: 0 };
+    Store.d.deduction = Store.d.deduction || { solved: 0 };
+    Store.d.deduction.solved = Object.keys(Store.d.logic).filter(k => Store.d.logic[k] && Store.d.logic[k].solved).length;
     Store.save();
     Sfx.win && Sfx.win();
 
