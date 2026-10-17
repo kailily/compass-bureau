@@ -1811,6 +1811,17 @@ input,textarea,select{cursor:text}
   .topbar-right{margin-left:auto}
 }
 
+/* 系统提示式弹窗 */
+.sys-note{display:flex;gap:14px;align-items:flex-start}
+.sys-ico{
+  flex:0 0 34px;width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(216,169,75,.45);color:var(--brass-2);
+  font-family:var(--serif);font-size:18px;background:rgba(216,169,75,.06);
+}
+.sys-note h3{margin:0 0 6px}
+.sys-note p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.8}
+
 </style>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230f0b07'/%3E%3Ccircle cx='16' cy='16' r='11.5' fill='none' stroke='%23d8a94b' stroke-width='1.6'/%3E%3Cpath d='M16 5.5 18.4 14.6 16 16 13.6 14.6Z' fill='%23c4564a'/%3E%3Cpath d='M16 26.5 18.4 17.4 16 16 13.6 17.4Z' fill='%23d8a94b' opacity='.55'/%3E%3Cpath d='M5.5 16 14.6 13.6 16 16 14.6 18.4Z' fill='%23d8a94b' opacity='.85'/%3E%3Cpath d='M26.5 16 17.4 13.6 16 16 17.4 18.4Z' fill='%23d8a94b' opacity='.85'/%3E%3Ccircle cx='16' cy='16' r='1.5' fill='%23f0cd82'/%3E%3C/svg%3E">
 </head>
@@ -4913,7 +4924,7 @@ const App = (() => {
         idx: i + 1, key: b, href: m.href, icon: m.icon, title: m.title,
         desc: m.desc, tags: m.tags,
         prog: pct(m.prog(P), m.total()),
-        locked, need: locked ? '先玩前面的' : '',
+        locked, need: locked ? '暂未解锁' : '',
       });
     }).join('');
 
@@ -5003,17 +5014,19 @@ const App = (() => {
       </a>`;
   }
 
-  /* 未解锁的卷：弹一张说明，而不是一闪而过的提示 */
+  /* 未解锁的卷：系统提示样式 */
   function lockedNotice(name) {
     const tierIdx = TIERS.findIndex(t => t.includes(name));
-    if (tierIdx < 0) return;
-    const prevTier = tierIdx > 0 ? TIERS[tierIdx - 1] : [];
-    if (!prevTier.length) return;
-    const prevTitles = prevTier.map(b => '「' + BOARD_META[b].title + '」').join(' 或 ');
+    if (tierIdx < 0 || tierIdx === 0) return;
     const cur = BOARD_META[name].title;
     Modal.open(`
-      <h3>还没开</h3>
-      <p>先玩前面的，后面才开。</p>
+      <div class="sys-note">
+        <div class="sys-ico">!</div>
+        <div>
+          <h3>暂未解锁</h3>
+          <p>「${esc(cur)}」需要先完成前面的内容，完成后自动解锁。</p>
+        </div>
+      </div>
       <div class="modal-foot">
         <button class="btn primary" onclick="Modal.close()">知道了</button>
       </div>`);
