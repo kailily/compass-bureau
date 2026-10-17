@@ -1,0 +1,13 @@
+{
+  "name": "compass-score-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "康帕斯事务所 · 酬金榜小后端",
+  "main": "score-server.js",
+  "scripts": {
+    "start": "node score-server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
