@@ -4536,8 +4536,9 @@ E ·     M −−     O −−−    N −·     R ·−·</pre>
 };
 
 /* 科普顺序：概览、频率分析置顶，其余按从基础到进阶 */
-const SCI_ORDER = ['modern', 'freq', 'caesar', 'atbash', 'vigenere', 'sub',
-  'morse', 'base64', 'rail', 'affine', 'bacon', 'polybius', 'playfair'];
+const SCI_ORDER = ['modern', 'freq',
+  'caesar', 'atbash', 'morse', 'polybius', 'bacon', 'base64',
+  'rail', 'vigenere', 'sub', 'affine', 'playfair'];
 CRYPTO.arts.sort((a, b) => SCI_ORDER.indexOf(a.id) - SCI_ORDER.indexOf(b.id));
 
 </script>
