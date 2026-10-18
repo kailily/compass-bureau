@@ -2827,6 +2827,72 @@ const SPOTS = [
       { id:'frame',  desc:'墙上相框挪了位置',      vars:{ fx:16 } },
     ],
   },
+  {
+    id: 'platform',
+    title: '雨夜站台',
+    lv: '进阶',
+    hint: '雨里的灯、末班车、一个不着急的人。',
+    viewBox: '0 0 400 300',
+    items: [
+      { id:'bg', tpl:`<defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#070d18"/><stop offset="1" stop-color="#152238"/>
+        </linearGradient>
+        <radialGradient id="glow" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stop-color="#ffd98a" stop-opacity=".85"/><stop offset="1" stop-color="#ffd98a" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect x="0" y="0" width="400" height="300" fill="url(#sky)"/>
+      <g fill="#0b1424">
+        <rect x="0" y="120" width="70" height="70"/><rect x="80" y="100" width="46" height="90"/>
+        <rect x="300" y="110" width="60" height="80"/><rect x="366" y="132" width="34" height="58"/>
+      </g>
+      <g fill="#f2d98a" opacity=".55">
+        <rect x="14" y="140" width="5" height="7"/><rect x="30" y="140" width="5" height="7"/>
+        <rect x="96" y="120" width="5" height="7"/><rect x="318" y="130" width="5" height="7"/>
+      </g>` },
+      { id:'rain', tpl:`<g stroke="#9fc4e8" stroke-width=".7" opacity=".22" stroke-linecap="round">
+        <path d="M20 0v70M58 12v80M96 4v64M140 18v72M182 6v66M224 16v76M266 8v70M308 14v78M350 4v68M386 18v74"/>
+        <path d="M40 120v60M120 130v54M200 124v62M280 132v56M360 126v58"/></g>` },
+      { id:'floor', tpl:`<rect x="0" y="190" width="400" height="110" fill="#101a26"/>
+        <rect x="0" y="190" width="400" height="6" fill="#2a3a4e"/>
+        <ellipse cx="120" cy="250" rx="70" ry="12" fill="#1c2f44"/>
+        <ellipse cx="300" cy="265" rx="80" ry="13" fill="#1c2f44"/>` },
+      { id:'lamp', vars:{ glowO:.95 }, tpl:`<ellipse cx="88" cy="92" rx="64" ry="52" fill="url(#glow)" opacity="{glowO}"/>
+        <rect x="85" y="96" width="6" height="96" fill="#26313f"/>
+        <rect x="76" y="86" width="24" height="10" rx="3" fill="#3a4657"/>
+        <circle cx="88" cy="92" r="5" fill="#ffe9ad"/>` },
+      { id:'sign', vars:{ sc:'#d9c9a6' }, tpl:`<rect x="150" y="104" width="76" height="30" rx="3" fill="#1a2433" stroke="#3d4d63"/>
+        <rect x="156" y="110" width="64" height="18" rx="2" fill="{sc}"/>
+        <text x="188" y="124" text-anchor="middle" font-size="12" fill="#22303f" font-family="serif">末班</text>
+        <rect x="186" y="134" width="4" height="58" fill="#26313f"/>` },
+      { id:'clock', vars:{ hx:246, hy:120 }, tpl:`<circle cx="238" cy="112" r="17" fill="#e7dcc4" stroke="#5c6a7e" stroke-width="2"/>
+        <circle cx="238" cy="112" r="2" fill="#2a3442"/>
+        <line x1="238" y1="112" x2="{hx}" y2="{hy}" stroke="#b0473c" stroke-width="2" stroke-linecap="round"/>
+        <line x1="238" y1="112" x2="238" y2="101" stroke="#2a3442" stroke-width="2" stroke-linecap="round"/>` },
+      { id:'bench', tpl:`<rect x="228" y="196" width="96" height="8" rx="2" fill="#3a2a1c"/>
+        <rect x="232" y="176" width="88" height="6" rx="2" fill="#463323"/>
+        <rect x="236" y="204" width="5" height="18" fill="#2c2118"/><rect x="312" y="204" width="5" height="18" fill="#2c2118"/>` },
+      { id:'person', vars:{ uc:'#2f4a63' }, tpl:`<ellipse cx="170" cy="196" rx="16" ry="5" fill="#0c1520" opacity=".6"/>
+        <path d="M170 196V150" stroke="#2b3546" stroke-width="9" stroke-linecap="round"/>
+        <circle cx="170" cy="142" r="7" fill="#cfae86"/>
+        <path d="M156 152q14-20 28 0q-14 10-28 0z" fill="{uc}"/>
+        <path d="M170 152v10" stroke="#2b3546" stroke-width="2"/>` },
+      { id:'cat', vars:{ cx:322 }, tpl:`<ellipse cx="{cx}" cy="238" rx="12" ry="7" fill="#1b2431"/>
+        <circle cx="{cx}" cy="230" r="5" fill="#1b2431"/>
+        <path d="M{cx} 225l-4-6 5 2z" fill="#1b2431"/><path d="M{cx} 225l4-6-5 2z" fill="#1b2431"/>` },
+      { id:'case', tpl:`<rect x="128" y="182" width="26" height="18" rx="2" fill="#4a3626"/>
+        <rect x="136" y="176" width="10" height="4" rx="1" fill="#6b5136"/>` },
+    ],
+    diffs: [
+      { id:'clock',  desc:'钟的指针方向变了',   vars:{ hx:252, hy:122 } },
+      { id:'sign',   desc:'站牌的颜色变了',     vars:{ sc:'#c46a5a' } },
+      { id:'lamp',   desc:'路灯暗了一些',       vars:{ glowO:.45 } },
+      { id:'person', desc:'伞的颜色变了',       vars:{ uc:'#7a4a5c' } },
+      { id:'cat',    desc:'猫挪到了另一边',     vars:{ cx:286 } },
+      { id:'case',   desc:'行李箱不见了',       hide:true },
+    ],
+  },
 ];
 
 /* 模板渲染：填充 {var} */
